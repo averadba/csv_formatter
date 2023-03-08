@@ -13,10 +13,11 @@ st.set_option('deprecation.showPyplotGlobalUse', False)
 def clean_data(df):
     # replace accents and special characters in string columns
     for col in df.select_dtypes(include='object'):
-        try:
-            df[col] = df[col].str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
-        except AttributeError:
-            pass
+        if df[col].dtype == "object":
+            try:
+                df[col] = df[col].str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
+            except AttributeError:
+                pass
     return df
 
 # function to rename columns
@@ -80,3 +81,19 @@ if file is not None:
             b64 = base64.b64encode(csv.encode()).decode()
             href = f'<a href="data:file/csv;base64,{b64}" download="formatted_data.csv">Download the reformatted data</a>'
             st.markdown(href, unsafe_allow_html=True)
+    else:
+        # display a button to reformat the data
+        if st.button("Reformat your file"):
+            # clean the data
+            df = clean_data(df)
+
+            # display the reformatted data
+            st.write("Reformatted Data:")
+            st.write(df)
+
+            # create a download link
+            csv = df.to_csv(index=False)
+            b64 = base64.b64encode(csv.encode()).decode()
+            href = f'<a href="data:file/csv;base64,{b64}" download="formatted_data.csv">Download the reformatted data</a>'
+            st.markdown(href, unsafe_allow_html=True)
+
